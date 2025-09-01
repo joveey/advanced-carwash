@@ -24,4 +24,15 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+
+    //layanan
+    Route::apiResource('services', App\Http\Controllers\Api\ServiceController::class);
+
+    //tipe mobil
+    Route::apiResource('car-types', App\Http\Controllers\Api\CarTypeController::class);
+
+    //reservasi
+    Route::post('/reservations', [App\Http\Controllers\Api\ReservationController::class, 'store']);
+    Route::get('/reservations', [App\Http\Controllers\Api\ReservationController::class, 'index']);
+    
 });
