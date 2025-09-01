@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -46,6 +47,22 @@ class User extends Authenticatable
     /**
      * Mendefinisikan relasi bahwa seorang User bisa memiliki banyak Reservation.
      */
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 1;
+    }
+
+    /**
+     * Check if user is regular user
+     */
+    public function isUser(): bool
+    {
+        return $this->role === 0;
+    }
+
     public function reservations()
     {
         return $this->hasMany(Reservation::class);

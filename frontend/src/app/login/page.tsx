@@ -1,64 +1,86 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from '@/lib/axios'; // Import our configured axios
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Login() {
-    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const { login } = useAuth({
+        middleware: 'guest',
+        redirectIfAuthenticated: '/dashboard',
+    });
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setError('');
-
+        setIsLoading(true);
+        
         try {
-            // First, get the CSRF cookie
-            await axios.get('/sanctum/csrf-cookie');
-
-            // Then, attempt to login
-            await axios.post('/api/login', { email, password });
-
-            // Redirect to a dashboard or home page on successful login
-            router.push('/');
-        } catch (err: any) {
-             if (err.response && err.response.status === 422) {
-                setError('The provided credentials do not match our records.');
-            } else {
-                setError('An unexpected error occurred.');
-            }
+            await login({
+                email,
+                password,
+                setErrors,
+            });
+        } catch (error) {
+            console.error('Login error:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center">
             <form onSubmit={handleSubmit} className="p-8 bg-gray-800 rounded-lg shadow-md w-96">
-                <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-                {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+                <h2 className="text-2xl font-bold mb-6 text-center text-white">Login</h2>
+                
+                {/* Error Messages */}
+                {errors.length > 0 && (
+                    <div className="bg-red-500 text-white p-3 rounded mb-4">
+                        {errors.map((error, index) => (
+                            <p key={index} className="text-sm text-center">{error}</p>
+                        ))}
+                    </div>
+                )}
+
                 <div className="mb-4">
-                    <label className="block mb-2">Email</label>
+                    <label className="block mb-2 text-white">Email</label>
                     <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        disabled={isLoading}
                         required
-                        className="w-full px-3 py-2 bg-gray-700 rounded-md focus:outline-none"
+                        className="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter your email"
                     />
                 </div>
+
                 <div className="mb-6">
-                    <label className="block mb-2">Password</label>
+                    <label className="block mb-2 text-white">Password</label>
                     <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        disabled={isLoading}
                         required
-                        className="w-full px-3 py-2 bg-gray-700 rounded-md focus:outline-none"
+                        className="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter your password"
                     />
                 </div>
-                <button type="submit" className="w-full py-2 bg-blue-600 rounded-md hover:bg-blue-700">
-                    Login
+
+                <button 
+                    type="submit"
+                    disabled={isLoading}
+                    className={`w-full py-2 rounded-md font-medium transition-colors
+                        ${isLoading 
+                            ? 'bg-blue-400 cursor-not-allowed' 
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        }`}
+                >
+                    {isLoading ? 'Logging in...' : 'Login'}
                 </button>
             </form>
         </div>

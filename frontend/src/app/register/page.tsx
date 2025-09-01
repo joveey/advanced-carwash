@@ -1,10 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import axios from '@/lib/axios'; // Import our configured axios
 
 export default function Register() {
+    useAuth(
+        {
+            middleware: 'guest',
+            redirectIfAuthenticated: '/', // Jika sudah login, lempar ke homepage
+        }
+        );
     const router = useRouter();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');

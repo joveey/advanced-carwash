@@ -23,11 +23,18 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 0, // default to regular user
         ]);
 
         return response()->json([
             'message' => 'Registration successful!',
-            'user' => $user
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => (int) $user->role,
+                'isAdmin' => $user->role === 1,
+            ]
         ], 201);
     }
 
@@ -46,9 +53,16 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
         return response()->json([
             'message' => 'Login successful!',
-            'user' => Auth::user()
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => (int) $user->role,
+                'isAdmin' => $user->role === 1,
+            ]
         ]);
     }
 
@@ -63,6 +77,17 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return $request->user();
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(null, 401);
+        }
+        
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => (int) $user->role,
+            'isAdmin' => $user->role === 1,
+        ]);
     }
 }

@@ -34,5 +34,5 @@ Route::middleware('auth:sanctum')->group(function () {
     //reservasi
     Route::post('/reservations', [App\Http\Controllers\Api\ReservationController::class, 'store']);
     Route::get('/reservations', [App\Http\Controllers\Api\ReservationController::class, 'index']);
-    
+
 });
