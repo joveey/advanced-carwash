@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function Login() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('admin@example.com'); // Default for easier testing
+    const [password, setPassword] = useState('password'); // Default for easier testing
     const [errors, setErrors] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -17,15 +17,25 @@ export default function Login() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
-        
+        setErrors([]);
+        console.log('--- Step 1: Login Submitted ---');
+
         try {
             await login({
                 email,
                 password,
                 setErrors,
             });
-        } catch (error) {
-            console.error('Login error:', error);
+            console.log('--- Step 4: Login function successful (redirecting) ---');
+        } catch (error: any) {
+            console.error('--- Step 4: Login function failed ---');
+            if (error.response) {
+                console.error('Axios error response:', error.response);
+                setErrors(prev => [...prev, `Error: ${error.response.status} - ${error.response.statusText}`]);
+            } else {
+                 console.error('Non-Axios error:', error.message);
+                setErrors(prev => [...prev, 'An unexpected error occurred. Check the console.']);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -36,7 +46,6 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="p-8 bg-gray-800 rounded-lg shadow-md w-96">
                 <h2 className="text-2xl font-bold mb-6 text-center text-white">Login</h2>
                 
-                {/* Error Messages */}
                 {errors.length > 0 && (
                     <div className="bg-red-500 text-white p-3 rounded mb-4">
                         {errors.map((error, index) => (
@@ -86,3 +95,4 @@ export default function Login() {
         </div>
     );
 }
+
